@@ -215,15 +215,19 @@ dialog::backdrop { background: rgba(0,0,0,.6); }
 <div class="tray" id="tray" aria-live="polite"></div>
 
 <script type="module">
-const DEFAULT_CONTRACT = "0xc84c36cD59F01Cb21E40c36bDF74D90520dD1D72";
+const DEFAULT_CONTRACT = "0x7BaFA0ffDB23fE9827d2cc9124edF953BdCBCf5c";
 const DEFAULT_NETWORK = "studionet";
 const params = new URLSearchParams(location.search);
 const NETWORK = params.get("network") || DEFAULT_NETWORK;
 const SDK_VERSION = NETWORK === "testnetBradbury" ? "2.0.0-rc.2" : "1.1.8";
 const CONTRACT = params.get("contract") || DEFAULT_CONTRACT;
 const LIFI = "https://li.quest/v1/status?txHash=";
-const CHAINS = { 1: "Ethereum", 10: "Optimism", 56: "BNB Chain", 100: "Gnosis", 137: "Polygon", 324: "zkSync Era",
-  8453: "Base", 42161: "Arbitrum", 43114: "Avalanche", 59144: "Linea", 534352: "Scroll", 81457: "Blast" };
+const CHAINS = {1: "Ethereum", 10: "Optimism", 25: "Cronos", 56: "BNB Chain", 100: "Gnosis", 130: "Unichain",
+  137: "Polygon", 146: "Sonic", 250: "Fantom", 324: "zkSync Era", 480: "World Chain", 999: "HyperEVM",
+  1088: "Metis", 1135: "Lisk", 1868: "Soneium", 2741: "Abstract", 5000: "Mantle", 8453: "Base",
+  34443: "Mode", 42161: "Arbitrum", 42220: "Celo", 43114: "Avalanche", 57073: "Ink", 59144: "Linea",
+  80094: "Berachain", 81457: "Blast", 167000: "Taiko", 534352: "Scroll", 7777777: "Zora",
+  20000000000001: "Bitcoin", 9270000000000000: "Sui", 1151111081099710: "Solana"};
 
 /* ---------- SDK (two CDNs in parallel, pinned version) ---------- */
 function withTimeout(p, ms) {
@@ -278,8 +282,10 @@ function fmtIn(ts) { const d = ts - nowSec(), a = Math.abs(d); const s = a < 360
 function fmtDate(ts) { return ts ? new Date(ts * 1000).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""; }
 function toast(html, kind = "", ms = 7000) { const el = document.createElement("div"); el.className = `toast ${kind}`; el.innerHTML = html; $("toasts").appendChild(el); if (ms) setTimeout(() => el.remove(), ms); return el; }
 function errText(e) { return (e?.shortMessage || e?.details || e?.message || String(e)).replace(/\[(EXPECTED|TRANSIENT|LLM_ERROR)\]\s*/g, ""); }
-function explorerTx(h) { const b = state.chain?.blockExplorers?.default?.url; return b ? `${b.replace(/\/$/, "")}/tx/${h}` : null; }
-function explorerAddr(a) { const b = state.chain?.blockExplorers?.default?.url; return b ? `${b.replace(/\/$/, "")}/address/${a}` : "#"; }
+const EXPLORERS = { studionet: "https://explorer-studio.genlayer.com", testnetBradbury: "https://scan.testnet-chain.genlayer.com" };
+function explorerBase() { return EXPLORERS[NETWORK] || state.chain?.blockExplorers?.default?.url; }
+function explorerTx(h) { const b = explorerBase(); return b ? `${b.replace(/\/$/, "")}/tx/${h}` : null; }
+function explorerAddr(a) { const b = explorerBase(); return b ? `${b.replace(/\/$/, "")}/address/${a}` : "#"; }
 function setSinceNow() { const d = new Date(Date.now() - new Date().getTimezoneOffset() * 60000); $("jSince").value = d.toISOString().slice(0, 16); }
 setSinceNow();
 

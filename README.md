@@ -95,8 +95,8 @@ outage costs no filing, reclaim paths, malformed LLM output never pays.
 | Item | Value |
 | --- | --- |
 | Network | GenLayer Studionet (chain 61999) |
-| Contract | `0xc84c36cD59F01Cb21E40c36bDF74D90520dD1D72` |
-| Deploy tx | `0xf60dfb089a6280c7f27d9182ed2c2efcc7be2938151fae15ba1bc950e4377954` (FINALIZED, 13 Nov 2026) |
+| Contract | `0x7BaFA0ffDB23fE9827d2cc9124edF953BdCBCf5c` |
+| Deploy tx | `0xb8d231ecd707bf3d35e87fcd9dcf28592902a65cdf99d79036a86a1f0ca72c48` (13 Nov 2026) |
 
 ## Proof
 
