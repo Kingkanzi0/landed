@@ -96,15 +96,17 @@ outage costs no filing, reclaim paths, malformed LLM output never pays.
 | --- | --- |
 | Network | GenLayer Studionet (chain 61999) |
 | Contract | `0x7BaFA0ffDB23fE9827d2cc9124edF953BdCBCf5c` |
-| Deploy tx | `0xb8d231ecd707bf3d35e87fcd9dcf28592902a65cdf99d79036a86a1f0ca72c48` (13 Nov 2026) |
+| Deploy tx | [`0xb8d231ec…a72c48`](https://explorer-studio.genlayer.com/tx/0xb8d231ecd707bf3d35e87fcd9dcf28592902a65cdf99d79036a86a1f0ca72c48) (13 Nov 2026) |
 
 ## Proof
 
+Run live on 13 Nov 2026 from the web app with real LI.FI transfers (Ethereum → Base via Across for PAY, Arbitrum → Ethereum via LI.FI Intents for REJECT).
+
 | Proof | Transaction |
 | --- | --- |
-| Job opened, fee escrowed | _pending_ |
-| Ruling PAY: LI.FI DONE, every term MET, fee paid | _pending_ |
-| Ruling REJECT: one term NOT MET, fee stays in escrow | _pending_ |
+| Job opened, fee escrowed | [`0x7626e0a0…3bea62`](https://explorer-studio.genlayer.com/tx/0x7626e0a00d6eb8cd96ce99982790d1b811fd3b8423da4b9015a560a0d63bea62) |
+| Ruling PAY: LI.FI DONE, every term MET, fee paid | [`0x03f969bb…e22cd0`](https://explorer-studio.genlayer.com/tx/0x03f969bbd4970060c997e90c9e8b5c282778fb9317ad7c55ed01877baae22cd0) |
+| Ruling REJECT: one term NOT MET, fee stays in escrow | [`0xf3d6383d…9cc9cc`](https://explorer-studio.genlayer.com/tx/0xf3d6383d77db2214fd51f98705342711c660d044f838b2fb07fb6abde69cc9cc) |
 
 ## Built with
 
