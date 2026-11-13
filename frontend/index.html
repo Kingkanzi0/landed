@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Landed · an Internet Court for cross-chain jobs</title>
+<meta name="description" content="Landed: escrow an agent's fee for a cross-chain transfer. GenLayer validators read LI.FI's own record of the transfer and judge every delivery term before anyone is paid.">
+<meta name="theme-color" content="#0c0b12">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F7C2FF'/%3E%3Cpath d='M32 12v26M20 28l12 12 12-12' fill='none' stroke='%230c0b12' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3Crect x='16' y='46' width='32' height='6' rx='3' fill='%230c0b12'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  --ink: #0c0b12; --ink-2: #15131e; --ink-3: #1f1c2b; --line: #2c2839;
+  --fg: #f4f1fb; --soft: #a8a1bb; --mute: #6f6884;
+  --pink: #f7c2ff; --pink-ink: #2a0d30; --violet: #b07cff;
+  --ok: #3ee39f; --ok-ink: #062818; --bad: #ff6b78; --bad-ink: #2c060b; --wait: #ffd23f;
+  --sans: "Space Grotesk", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { max-width: 100%; }
+body { margin: 0; font: 500 15px/1.5 var(--sans); color: var(--fg); background: var(--ink);
+  background-image: radial-gradient(900px 500px at 85% -10%, rgba(247,194,255,.14), transparent 60%), radial-gradient(800px 500px at -10% 10%, rgba(176,124,255,.14), transparent 60%);
+  overflow-x: hidden; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--pink); }
+:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.mono { font-family: var(--mono); }
+.top { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 10px; padding: 12px 18px; background: rgba(12,11,18,.86); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; text-decoration: none; color: var(--fg); }
+.brand i { width: 32px; height: 32px; border-radius: 9px; background: var(--pink); display: grid; place-items: center; }
+.brand b { font: 700 21px var(--sans); letter-spacing: -.5px; }
+.chip { font: 700 12px var(--mono); color: var(--soft); border: 1px solid var(--line); border-radius: 99px; padding: 6px 10px; white-space: nowrap; }
+.chip::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-right: 6px; }
+.btn { border: 0; border-radius: 12px; padding: 11px 16px; font-weight: 700; background: var(--pink); color: var(--pink-ink); white-space: nowrap; }
+.btn:hover { filter: brightness(1.06); } .btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.ghost { background: var(--ink-3); color: var(--fg); border: 1px solid var(--line); }
+.btn.sm { padding: 7px 11px; font-size: 13px; border-radius: 10px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 22px 18px 60px; }
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
+.hero-l { background: linear-gradient(160deg, #22183a, #14121c 70%); border: 1px solid var(--line); border-radius: 24px; padding: 28px; }
+.kicker { font: 700 12px var(--mono); letter-spacing: 2px; color: var(--pink); text-transform: uppercase; }
+h1 { margin: 10px 0 12px; font: 700 clamp(36px, 6vw, 62px)/.98 var(--sans); letter-spacing: -2px; }
+h1 span { color: var(--pink); }
+.lead { color: var(--soft); font-size: 17px; max-width: 48ch; margin: 0 0 18px; }
+.logos { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-top: 16px; border-top: 1px solid var(--line); }
+.logos small { color: var(--mute); font: 600 12px var(--mono); }
+.logos svg { height: 24px; width: auto; display: block; }
+.ic-badge { font: 700 14px var(--sans); border: 1.5px solid var(--fg); border-radius: 8px; padding: 3px 9px; letter-spacing: .3px; }
+.steps { background: var(--ink-2); border: 1px solid var(--line); border-radius: 24px; padding: 22px; display: grid; gap: 10px; align-content: start; }
+.steps h2 { margin: 0 0 4px; font: 700 18px var(--sans); }
+.step { display: grid; grid-template-columns: 30px minmax(0,1fr); gap: 12px; align-items: start; }
+.step i { width: 30px; height: 30px; border-radius: 50%; background: var(--ink-3); border: 1px solid var(--line); display: grid; place-items: center; font: 700 13px var(--mono); font-style: normal; color: var(--pink); }
+.step b { display: block; } .step span { color: var(--soft); font-size: 14px; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 20px; margin-top: 20px; align-items: start; }
+.panel { background: var(--ink-2); border: 1px solid var(--line); border-radius: 20px; padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.panel h2 { margin: 0; font: 700 19px var(--sans); display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.panel h2 small { font: 600 12px var(--mono); color: var(--mute); }
+label { font-weight: 600; font-size: 13.5px; color: var(--soft); display: grid; gap: 6px; }
+input, textarea, select { background: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; color: var(--fg); width: 100%; min-width: 0; }
+textarea { min-height: 112px; resize: vertical; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; } .row > * { flex: 1 1 140px; }
+.hint { color: var(--mute); font-size: 13px; margin: 0; }
+.ev { background: var(--ink); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 8px; font-size: 14px; }
+.ev-flow { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 10px; align-items: center; }
+.ev-side { background: var(--ink-3); border-radius: 10px; padding: 10px; min-width: 0; }
+.ev-side small { display: block; color: var(--mute); font: 600 11px var(--mono); text-transform: uppercase; }
+.ev-side b { display: block; font-size: 18px; }
+.ev-arrow { color: var(--pink); font: 700 22px var(--mono); }
+.ev-meta { color: var(--soft); font-size: 13px; word-break: break-all; }
+.st { font: 700 11px var(--mono); padding: 3px 7px; border-radius: 6px; white-space: nowrap; }
+.st.DONE, .st.MET, .st.PAY, .st.PAID { background: rgba(62,227,159,.15); color: var(--ok); }
+.st.NOT_MET, .st.REJECT, .st.FAILED, .st.REFUNDED, .st.NOT_FOUND, .st.INVALID { background: rgba(255,107,120,.15); color: var(--bad); }
+.st.PENDING, .st.WAITING, .st.OPEN { background: rgba(255,210,63,.13); color: var(--wait); }
+.jobs { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.job { background: var(--ink); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 8px; }
+.job .r1 { display: flex; gap: 8px; align-items: center; } .job .r1 b { flex: 1; min-width: 0; }
+.job .id { color: var(--mute); font: 600 12px var(--mono); }
+.meta { color: var(--soft); font-size: 13px; }
+.term { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 14px; }
+.term div, .meta, .ev-side b, .job .r1 b { overflow-wrap: anywhere; }
+.term small { display: block; color: var(--mute); font-size: 12.5px; }
+.acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.empty { color: var(--mute); text-align: center; padding: 24px; }
+dialog { background: var(--ink-2); color: var(--fg); border: 1px solid var(--line); border-radius: 18px; padding: 0; width: min(560px, 94vw); }
+dialog::backdrop { background: rgba(0,0,0,.6); }
+.dlg-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.dlg-head h3 { margin: 0; } .dlg-body { padding: 18px; display: grid; gap: 12px; }
+.close-x { background: none; border: 0; font-size: 24px; color: var(--soft); }
+.wallet-list { display: grid; gap: 8px; }
+.wallet-opt { display: flex; align-items: center; gap: 10px; background: var(--ink-3); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; text-align: left; }
+.wallet-dot { width: 28px; height: 28px; border-radius: 8px; background: var(--pink); }
+.toasts { position: fixed; top: 70px; right: 16px; z-index: 60; display: grid; gap: 8px; max-width: min(420px, 92vw); }
+.toast { background: var(--ink-3); border: 1px solid var(--line); border-left: 4px solid var(--violet); border-radius: 12px; padding: 12px 14px; font-size: 14px; }
+.toast.err { border-left-color: var(--bad); } .toast.ok { border-left-color: var(--ok); }
+.tray { position: fixed; left: 16px; bottom: 16px; z-index: 50; display: grid; gap: 8px; width: min(360px, 92vw); }
+.tjob { background: var(--ink-2); border: 1px solid var(--line); border-radius: 14px; padding: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+.tjob.ok { border-color: rgba(62,227,159,.5); } .tjob.fail { border-color: rgba(255,107,120,.5); }
+.tjob-head { display: flex; align-items: center; gap: 8px; } .tjob-head b { flex: 1; font-size: 14px; }
+.tjob-head button { background: none; border: 0; color: var(--soft); font-size: 16px; }
+.clock { font: 600 12px var(--mono); color: var(--soft); }
+.tsteps { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 4px; font-size: 13px; color: var(--mute); }
+.tsteps li::before { content: "○"; margin-right: 8px; }
+.tsteps li.done { color: var(--soft); } .tsteps li.done::before { content: "●"; color: var(--ok); }
+.tsteps li.now { color: var(--fg); } .tsteps li.now::before { content: "◌"; color: var(--pink); }
+.tsteps li.bad { color: var(--bad); } .tsteps li.bad::before { content: "✕"; }
+.tjob.min .tsteps { display: none; }
+.tjob-foot { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--soft); }
+.foot { margin-top: 28px; color: var(--mute); font-size: 13px; text-align: center; }
+@media (max-width: 860px) { .hero, .grid { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { #netLabel { display: none; } .ev-flow { grid-template-columns: 1fr; } .ev-arrow { transform: rotate(90deg); justify-self: center; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="./"><i><svg width="20" height="20" viewBox="0 0 64 64"><path d="M32 8v30M18 26l14 14 14-14" fill="none" stroke="#0c0b12" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><rect x="12" y="48" width="40" height="8" rx="4" fill="#0c0b12"/></svg></i><b>Landed</b></a>
+  <span class="chip" id="netLabel">GenLayer</span>
+  <button class="btn ghost sm" type="button" id="fundBtn" hidden>Get test GEN</button>
+  <button class="btn sm" type="button" id="connectBtn">Connect wallet</button>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="hero-l">
+      <div class="kicker">Internet Court · Partner demo</div>
+      <h1>Pay the agent only<br>when the money <span>landed.</span></h1>
+      <p class="lead">Hire an agent to move funds across chains. Its fee waits in escrow. GenLayer validators read LI.FI's own record of the transfer and judge every term you set. Delivered: the agent is paid. Not delivered: you get your fee back.</p>
+      <div class="logos" aria-label="Built with">
+        <small>BUILT WITH</small>
+        <span class="ic-badge">Internet Court</span>
+        <svg aria-label="GenLayer" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 385.32 91.93" > <path fill="#ffffff" d="M296.72,79.83v-6.28h7.17l2.69-6.54-13.82-31.49h8.28l9.49,22.42h.26l9.18-22.42h7.96l-13.55,31.65-5.31,12.66h-12.36Z"/> <path fill="#ffffff" d="M106.14,46.33c0-13.83,8.72-22.96,22.42-22.96,11.51,0,19.01,6.2,19.76,15.19h-7.36c-1.29-5.38-5.31-8.45-9.2-8.45h-6.2c-6.34,0-11.99,7.15-11.99,16.08s5.79,15.94,12.54,15.94h4.57c5.04,0,8.99-3,10.63-6.2v-5.66h-10.97v-6.06h17.78v13.9c-2.73,5.31-8.86,10.77-19.62,10.77-13.56,0-22.35-8.31-22.35-22.55Z"/> <path fill="#ffffff" d="M153.44,51.78c0-10.42,6.95-17.17,17.1-17.17,9.61,0,16.01,5.86,16.01,17.51v1.64h-25.96c.68,4.97,3.82,8.86,8.52,8.86h2.93c3.68,0,6.06-2.25,6.81-5.11h7.09c-.89,6.54-6.27,11.38-15.6,11.38-10.77,0-16.9-7.22-16.9-17.1ZM179.33,48.31c-.34-4.57-3.54-7.43-7.02-7.43h-3.75c-3.75,0-6.75,2.93-7.7,7.43h18.46Z"/> <path fill="#ffffff" d="M191.68,34.61h17.85c8.04,0,12.74,4.57,12.74,12.95v20.37h-7.15v-19.15c0-4.7-2.38-7.49-5.79-7.49h-10.49v26.64h-7.15v-33.32Z"/> <path fill="#ffffff" d="M228.29,24.32h7.36v36.86h16.26v6.75h-23.62V24.32Z"/> <path fill="#ffffff" d="M253.95,51.71c0-10.08,6.54-17.1,15.88-17.1,4.84,0,8.79,2.25,10.9,4.84v-3.88h7.02v32.36h-7.02v-4.57c-2.45,3.13-6,5.52-11.11,5.52-9.4,0-15.67-7.02-15.67-17.17ZM269.15,62.48h4.29c4.02,0,7.09-3.41,7.09-7.84v-5.66c0-4.29-2.86-7.97-7.09-7.97h-4.29c-4.43,0-8.04,4.77-8.04,10.7s3.61,10.77,8.04,10.77Z"/> <path fill="#ffffff" d="M327.94,51.78c0-10.42,6.95-17.17,17.1-17.17,9.61,0,16.01,5.86,16.01,17.51v1.64h-25.96c.68,4.97,3.82,8.86,8.52,8.86h2.93c3.68,0,6.06-2.25,6.81-5.11h7.09c-.89,6.54-6.27,11.38-15.6,11.38-10.77,0-16.9-7.22-16.9-17.1ZM353.83,48.31c-.34-4.57-3.54-7.43-7.02-7.43h-3.75c-3.75,0-6.75,2.93-7.7,7.43h18.46Z"/> <path fill="#ffffff" d="M366.18,35.57h19.15v6.88h-11.99v25.48h-7.15v-32.36Z"/> <polygon fill="#ffffff" points="44.26 32.35 27.72 67.12 43.29 74.9 0 91.93 44.26 0 44.26 32.35"/> <polygon fill="#ffffff" points="53.5 32.35 70.04 67.12 54.47 74.9 97.76 91.93 53.5 0 53.5 32.35"/> <polygon fill="#ffffff" points="48.64 43.78 58.33 62.94 48.64 67.69 39.47 62.92 48.64 43.78"/> </svg>
+        <svg viewBox="0 0 132 48" aria-label="LI.FI" role="img"><use href="#lifiMark"/></svg>
+      </div>
+    </div>
+    <div class="steps">
+      <h2>How a job settles</h2>
+      <div class="step"><i>1</i><div><b>Client opens a job</b><span>Plain-language delivery terms, the agent's address, and the fee in escrow.</span></div></div>
+      <div class="step"><i>2</i><div><b>Agent bridges with LI.FI</b><span>Then files the source transaction hash as proof.</span></div></div>
+      <div class="step"><i>3</i><div><b>Validators read LI.FI</b><span>Each one fetches the transfer's status from LI.FI and judges every term against it. They must agree term by term.</span></div></div>
+      <div class="step"><i>4</i><div><b>Plain code settles</b><span>LI.FI says DONE and every term is met: the fee goes to the agent. Otherwise it stays, and the client can reclaim it.</span></div></div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div style="display:grid;gap:20px">
+      <div class="panel">
+        <h2>Check a transfer <small>LI.FI evidence</small></h2>
+        <p class="hint">Paste any LI.FI transaction hash. This is exactly what every validator reads before ruling.</p>
+        <div class="row"><input id="evTx" class="mono" placeholder="0x… source transaction hash" spellcheck="false"><button class="btn ghost" type="button" id="evBtn" style="flex:0 0 auto">Read LI.FI</button></div>
+        <div id="evOut"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Open a job <small>you are the client</small></h2>
+        <label>Title<input id="jTitle" maxlength="80" placeholder="Bridge 50 USDC to Base"></label>
+        <label>Delivery terms (one per line, up to 5)<textarea id="jTerms" placeholder="Move USDC from Arbitrum to Base&#10;At least 45 USDC must arrive on Base&#10;Funds must arrive at 0x…"></textarea></label>
+        <label>Agent's wallet address<input id="jAgent" class="mono" placeholder="0x…" spellcheck="false"></label>
+        <div class="row">
+          <label>Agent fee (GEN)<input id="jFee" inputmode="decimal" value="0.1"></label>
+          <label>Deadline (days)<input id="jDays" type="number" min="1" max="30" value="3"></label>
+        </div>
+        <label>Count transfers sent after<input id="jSince" type="datetime-local"></label>
+        <p class="hint">Older transfers can never satisfy this job, so an agent can't reuse yesterday's bridge. Leave it as now for a real job.</p>
+        <div class="acts"><button class="btn" type="button" id="jOpen">Lock fee and open job</button><button class="btn ghost" type="button" id="jFromEv" title="Fill the terms from the transfer checked above">Use the checked transfer as the example</button></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Jobs <small id="count"></small></h2>
+      <ul class="jobs" id="jobs"><li class="empty">Loading…</li></ul>
+    </div>
+  </section>
+
+  <p class="foot">Landed is open source. <a id="contractLink" href="#" target="_blank" rel="noopener">Contract</a> · <a href="https://github.com/Kingkanzi0/landed" target="_blank" rel="noopener">GitHub</a> · <a href="https://github.com/Kingkanzi0/landed/blob/main/skill/SKILL.md" target="_blank" rel="noopener">Agent skill</a> · Evidence from <a href="https://docs.li.fi/" target="_blank" rel="noopener">LI.FI</a></p>
+</main>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="glMark" fill="#fff">
+      <polygon points="44.26 32.35 27.72 67.12 43.29 74.9 0 91.93 44.26 0 44.26 32.35"/>
+      <polygon points="53.5 32.35 70.04 67.12 54.47 74.9 97.76 91.93 53.5 0 53.5 32.35"/>
+      <polygon points="48.64 43.78 58.33 62.94 48.64 67.69 39.47 62.92 48.64 43.78"/>
+    </g>
+    <g id="lifiMark" fill="#fff">
+      <path d="m19.314 0 9.878 9.879a3 3 0 0 1 0 4.242L23.314 20l-4-4c-4.419-4.418-4.419-11.582 0-16Z"/>
+      <path fill-rule="evenodd" d="m19.314 48-16-16c-4.419-4.418-4.419-11.582 0-16l13.878 13.879a3 3 0 0 0 4.243 0L35.314 16c4.418 4.418 4.418 11.582 0 16l-16 16Z"/>
+      <path d="M123.319 36s.034-21 0-22 .985-2 1.966-2h4.034v22c.035 1-.965 2-1.965 2h-4.035ZM99.32 14v22h6v-8h10c1 0 2-1 2-2v-4h-12v-4h12c1 0 2-1 2-2v-4h-18c-1 0-2 1-2 2Zm-9.998 18c0-1 1-2 2-2h2c1 0 2 1 2 2v2c0 1-1 2-2 2h-2c-1 0-2-1-2-2v-2Zm-10.001 4s.034-21 0-22 .985-2 1.966-2h4.034v22c.035 1-.965 2-1.965 2h-4.035ZM55.32 30V14c0-1 .87-2 2-2h4v18h14v4c0 1-1 2-2 2h-18v-6Z"/>
+    </g>
+  </defs>
+</svg>
+
+<dialog id="fileDlg" aria-labelledby="fileTitle">
+  <form method="dialog" id="fileForm">
+    <div class="dlg-head"><h3 id="fileTitle">File proof</h3><button class="close-x" value="cancel" aria-label="Close">&times;</button></div>
+    <div class="dlg-body">
+      <div class="meta" id="fileJob"></div>
+      <label>LI.FI source transaction hash<input id="fileTx" class="mono" placeholder="0x…" spellcheck="false"></label>
+      <div id="fileEv"></div>
+      <p class="hint">Validators fetch this transfer from LI.FI and judge every term. You have 3 filings per job.</p>
+      <div class="acts"><button class="btn ghost" type="button" id="filePreview">Preview LI.FI record</button><button class="btn" id="fileSend" value="send">File proof</button></div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="walletDlg" aria-labelledby="walletTitle">
+  <div class="dlg-head"><h3 id="walletTitle">Choose a wallet</h3><button class="close-x" type="button" data-cancel aria-label="Close">&times;</button></div>
+  <div class="dlg-body"><div id="walletList" class="wallet-list"></div></div>
+</dialog>
+
+<div class="toasts" id="toasts" aria-live="assertive"></div>
+<div class="tray" id="tray" aria-live="polite"></div>
+
+<script type="module">
+const DEFAULT_CONTRACT = "";                 // set after deploy
+const DEFAULT_NETWORK = "studionet";
+const params = new URLSearchParams(location.search);
+const NETWORK = params.get("network") || DEFAULT_NETWORK;
+const SDK_VERSION = NETWORK === "testnetBradbury" ? "2.0.0-rc.2" : "1.1.8";
+const CONTRACT = params.get("contract") || DEFAULT_CONTRACT;
+const LIFI = "https://li.quest/v1/status?txHash=";
+const CHAINS = { 1: "Ethereum", 10: "Optimism", 56: "BNB Chain", 100: "Gnosis", 137: "Polygon", 324: "zkSync Era",
+  8453: "Base", 42161: "Arbitrum", 43114: "Avalanche", 59144: "Linea", 534352: "Scroll", 81457: "Blast" };
+
+/* ---------- SDK (two CDNs in parallel, pinned version) ---------- */
+function withTimeout(p, ms) {
+  return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("the GenLayer SDK took too long to load")), ms))]);
+}
+async function loadSdk() {
+  const sources = [
+    [`https://esm.sh/genlayer-js@${SDK_VERSION}`, `https://esm.sh/genlayer-js@${SDK_VERSION}/chains`],
+    [`https://cdn.jsdelivr.net/npm/genlayer-js@${SDK_VERSION}/+esm`, `https://cdn.jsdelivr.net/npm/genlayer-js@${SDK_VERSION}/dist/chains/index.js/+esm`],
+  ];
+  const attempt = ([a, b]) => withTimeout(Promise.all([import(a), import(b)]), 12000).then(([sdk, chains]) => ({ sdk, chains }));
+  try { return await Promise.any(sources.map(attempt)); } catch (e) { throw (e && e.errors && e.errors[0]) || e; }
+}
+const state = { sdk: null, chain: null, reader: null, writer: null, account: null, jobs: [], ev: null };
+let sdkPromise = null;
+function ensureSdk() {
+  if (state.chain) return Promise.resolve();
+  if (sdkPromise) return sdkPromise;
+  sdkPromise = (async () => {
+    let err;
+    for (let round = 0; round < 2; round++) {
+      try {
+        const { sdk, chains } = await loadSdk();
+        const chain = chains[NETWORK];
+        if (!chain) throw new Error(`Unknown network "${NETWORK}"`);
+        state.sdk = sdk; state.chain = chain; state.reader = sdk.createClient({ chain });
+        return;
+      } catch (e) { err = e; await new Promise((r) => setTimeout(r, 1500 * (round + 1))); }
+    }
+    sdkPromise = null;
+    throw err;
+  })();
+  return sdkPromise;
+}
+
+/* ---------- helpers ---------- */
+const $ = (id) => document.getElementById(id);
+const nowSec = () => Math.floor(Date.now() / 1000);
+function localGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
+function localSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+const WEI = 10n ** 18n;
+function fmtGen(wei) { const v = BigInt(wei || 0); const f = (v % WEI).toString().padStart(18, "0").slice(0, 4).replace(/0+$/, ""); return f ? `${v / WEI}.${f}` : `${v / WEI}`; }
+function parseGen(t) {
+  t = String(t).trim();
+  if (!/^\d+(\.\d{1,18})?$/.test(t)) throw new Error("Enter an amount like 1 or 0.5");
+  const [w, f = ""] = t.split(".");
+  return BigInt(w) * WEI + BigInt((f + "0".repeat(18)).slice(0, 18));
+}
+function short(a) { return a ? `${a.slice(0, 6)}…${a.slice(-4)}` : ""; }
+function fmtIn(ts) { const d = ts - nowSec(), a = Math.abs(d); const s = a < 3600 ? `${Math.max(1, Math.round(a / 60))} min` : a < 86400 ? `${Math.round(a / 3600)} h` : `${Math.round(a / 86400)} days`; return d >= 0 ? `in ${s}` : `${s} ago`; }
+function fmtDate(ts) { return ts ? new Date(ts * 1000).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""; }
+function toast(html, kind = "", ms = 7000) { const el = document.createElement("div"); el.className = `toast ${kind}`; el.innerHTML = html; $("toasts").appendChild(el); if (ms) setTimeout(() => el.remove(), ms); return el; }
+function errText(e) { return (e?.shortMessage || e?.details || e?.message || String(e)).replace(/\[(EXPECTED|TRANSIENT|LLM_ERROR)\]\s*/g, ""); }
+function explorerTx(h) { const b = state.chain?.blockExplorers?.default?.url; return b ? `${b.replace(/\/$/, "")}/tx/${h}` : null; }
+function explorerAddr(a) { const b = state.chain?.blockExplorers?.default?.url; return b ? `${b.replace(/\/$/, "")}/address/${a}` : "#"; }
+function setSinceNow() { const d = new Date(Date.now() - new Date().getTimezoneOffset() * 60000); $("jSince").value = d.toISOString().slice(0, 16); }
+setSinceNow();
+
+/* ---------- LI.FI evidence (same reduction the contract does) ---------- */
+function units(amount, decimals) {
+  let a, d;
+  try { a = BigInt(amount || 0); d = Math.max(0, Math.min(Number(decimals || 0), 36)); } catch { return ""; }
+  if (!d) return a.toString();
+  const p = 10n ** BigInt(d), whole = a / p, frac = (a % p).toString().padStart(d, "0").replace(/0+$/, "");
+  return frac ? `${whole}.${frac}` : whole.toString();
+}
+function side(s) {
+  s = s || {}; const t = s.token || {}; const cid = Number(s.chainId || 0);
+  return { chain: cid ? (CHAINS[cid] || `chain ${cid}`) : "", chain_id: cid, token: String(t.symbol || "").slice(0, 16), amount: units(s.amount, t.decimals), tx: String(s.txHash || "").toLowerCase(), time: Number(s.timestamp || 0) };
+}
+function recordFrom(d) {
+  return { status: String(d.status || "NOT_FOUND"), substatus: String(d.substatus || ""), tool: String(d.tool || "").slice(0, 32),
+    from_address: String(d.fromAddress || "").toLowerCase(), to_address: String(d.toAddress || "").toLowerCase(), sent: side(d.sending), received: side(d.receiving) };
+}
+async function readLifi(tx) {
+  const r = await fetch(LIFI + encodeURIComponent(tx));
+  if (r.status === 404) return recordFrom({ status: "NOT_FOUND" });
+  if (!r.ok) throw new Error(`LI.FI answered HTTP ${r.status}`);
+  return recordFrom(await r.json());
+}
+function evHtml(rec) {
+  const s = rec.sent, v = rec.received;
+  return `<div class="ev">
+    <div class="r1" style="display:flex;gap:8px;align-items:center"><span class="st ${esc(rec.status)}">${esc(rec.status)}</span>${rec.substatus ? `<span class="st ${rec.substatus === "COMPLETED" ? "DONE" : rec.substatus === "REFUNDED" ? "REFUNDED" : "PENDING"}">${esc(rec.substatus)}</span>` : ""}<span class="meta">via ${esc(rec.tool || "LI.FI")}</span></div>
+    <div class="ev-flow">
+      <div class="ev-side"><small>Sent on ${esc(s.chain || "?")}</small><b>${esc(s.amount || "0")} ${esc(s.token)}</b><span class="meta">${esc(fmtDate(s.time))}</span></div>
+      <div class="ev-arrow">→</div>
+      <div class="ev-side"><small>Landed on ${esc(v.chain || "?")}</small><b>${v.amount ? `${esc(v.amount)} ${esc(v.token)}` : "nothing yet"}</b><span class="meta">${esc(fmtDate(v.time))}</span></div>
+    </div>
+    <div class="ev-meta">to <span class="mono">${esc(rec.to_address || "?")}</span></div>
+  </div>`;
+}
+$("evBtn").addEventListener("click", async () => {
+  const tx = $("evTx").value.trim().toLowerCase();
+  if (!/^0x[0-9a-f]{64}$/.test(tx)) return toast("Paste a 0x transaction hash (66 characters).", "err");
+  $("evOut").innerHTML = `<p class="hint">Reading LI.FI…</p>`;
+  try { state.ev = { tx, rec: await readLifi(tx) }; $("evOut").innerHTML = evHtml(state.ev.rec); }
+  catch (e) { $("evOut").innerHTML = `<p class="hint">Couldn't read LI.FI: ${esc(errText(e))}</p>`; }
+});
+$("jFromEv").addEventListener("click", () => {
+  const ev = state.ev;
+  if (!ev || ev.rec.status !== "DONE") return toast("First check a finished LI.FI transfer above (status DONE).", "err");
+  const r = ev.rec, s = r.sent, v = r.received;
+  const min = Math.floor(Number(v.amount) * 0.98 * 100) / 100;
+  $("jTitle").value = `Bridge ${s.amount} ${s.token} to ${v.chain}`.slice(0, 80);
+  $("jTerms").value = [`Move ${s.token} from ${s.chain} to ${v.chain}`, `At least ${min} ${v.token} must arrive on ${v.chain}`, `Funds must arrive at ${r.to_address}`].join("\n");
+  const since = new Date((s.time - 3600) * 1000 - new Date().getTimezoneOffset() * 60000);
+  $("jSince").value = since.toISOString().slice(0, 16);
+  toast("Terms filled from the LI.FI record. Add the agent's address and open the job.", "ok");
+});
+
+/* ---------- wallet ---------- */
+const wallets = [];
+window.addEventListener("eip6963:announceProvider", (e) => { const d = e.detail; if (d?.provider && !wallets.some((w) => w.info.uuid === d.info.uuid)) wallets.push(d); });
+window.dispatchEvent(new Event("eip6963:requestProvider"));
+const WALLET_KEY = "landed.wallet";
+function walletChoices() {
+  const list = wallets.map((w) => ({ id: w.info.rdns || w.info.uuid, name: w.info.name, icon: w.info.icon, provider: w.provider }));
+  if (!list.length && window.ethereum) list.push({ id: "injected", name: window.ethereum.isOkxWallet ? "OKX Wallet" : window.ethereum.isMetaMask ? "MetaMask" : "Browser wallet", icon: "", provider: window.ethereum });
+  return list;
+}
+function chooseWallet(list) {
+  return new Promise((resolve) => {
+    const dlg = $("walletDlg");
+    $("walletList").innerHTML = list.map((w, i) => `<button class="wallet-opt" type="button" data-i="${i}">${w.icon ? `<img src="${esc(w.icon)}" alt="" width="28" height="28">` : `<span class="wallet-dot"></span>`}<span>${esc(w.name)}</span></button>`).join("");
+    const done = (v) => { dlg.close(); dlg.onclick = null; dlg.onclose = null; resolve(v); };
+    dlg.onclick = (e) => { const b = e.target.closest(".wallet-opt"); if (b) done(list[Number(b.dataset.i)]); else if (e.target.closest("[data-cancel]")) done(null); };
+    dlg.onclose = () => resolve(null);
+    dlg.showModal();
+  });
+}
+async function pickProvider() {
+  const list = walletChoices();
+  if (list.length <= 1) return list[0] || null;
+  return list.find((w) => w.id === localGet(WALLET_KEY)) || chooseWallet(list);
+}
+async function ensureChain(eth) {
+  const c = state.chain, hex = "0x" + c.id.toString(16);
+  if (String(await eth.request({ method: "eth_chainId" })).toLowerCase() === hex) return;
+  try { await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: hex }] }); }
+  catch (err) {
+    if (err?.code === 4001) throw err;
+    await eth.request({ method: "wallet_addEthereumChain", params: [{ chainId: hex, chainName: c.name || "GenLayer", rpcUrls: c.rpcUrls.default.http,
+      nativeCurrency: c.nativeCurrency || { name: "GEN", symbol: "GEN", decimals: 18 }, blockExplorerUrls: c.blockExplorers?.default?.url ? [c.blockExplorers.default.url] : undefined }] });
+  }
+}
+async function connect() {
+  const btn = $("connectBtn");
+  if (!state.chain) {
+    btn.textContent = "Loading…"; btn.disabled = true;
+    try { await ensureSdk(); } catch (e) { toast(`Couldn't load the GenLayer SDK (${esc(errText(e))}). Check your connection; in Brave, turn Shields off for this page and reload.`, "err", 14000); return; }
+    finally { btn.textContent = "Connect wallet"; btn.disabled = false; }
+  }
+  window.dispatchEvent(new Event("eip6963:requestProvider"));
+  await new Promise((r) => setTimeout(r, 150));
+  const choice = await pickProvider();
+  if (!choice) { if (!walletChoices().length) toast("No browser wallet found. Install OKX Wallet or MetaMask, then reload.", "err"); return; }
+  const eth = choice.provider;
+  try {
+    const [acct] = await eth.request({ method: "eth_requestAccounts" });
+    if (!acct) throw new Error("The wallet returned no account. Unlock it and try again.");
+    await ensureChain(eth);
+    state.account = acct; localSet(WALLET_KEY, choice.id);
+    state.writer = state.sdk.createClient({ chain: state.chain, account: acct, provider: eth });
+    btn.textContent = short(acct);
+    eth.on?.("accountsChanged", () => location.reload());
+    eth.on?.("chainChanged", () => location.reload());
+    draw();
+  } catch (e) {
+    toast(`Wallet connection failed: ${esc(e?.code === 4001 ? "you rejected the request" : errText(e))}`, "err", 15000);
+  }
+}
+$("connectBtn").addEventListener("click", connect);
+
+/* Free test GEN on Studionet (Studio's own faucet method). */
+$("fundBtn").addEventListener("click", async () => {
+  if (!state.account) { await connect(); if (!state.account) return; }
+  const url = state.chain.rpcUrls.default.http[0];
+  const body = `{"jsonrpc":"2.0","id":1,"method":"sim_fundAccount","params":["${state.account}",100000000000000000000]}`;
+  try {
+    const r = await (await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body })).json();
+    if (r.error) throw new Error(r.error.message || "faucet error");
+    toast("100 test GEN sent to your wallet on Studionet.", "ok");
+  } catch (e) { toast(`Faucet failed: ${esc(errText(e))}`, "err"); }
+});
+
+/* ---------- transaction tracker ---------- */
+const TX_KEY = "landed.txs";
+const txs = new Map();
+const STAGES = { open: ["Signed in your wallet", "Waiting in the network queue", "Leader validator records the job", "Other validators check it", "Accepted: the fee is in escrow", "Finalized"],
+  file: ["Signed in your wallet", "Waiting in the network queue", "Leader validator reads LI.FI and rules", "Other validators read LI.FI on their own", "Accepted: ruling recorded", "Finalized"],
+  reclaim: ["Signed in your wallet", "Waiting in the network queue", "Leader validator checks the job", "Other validators check it", "Accepted: fee returned", "Finalized"] };
+const STAGE_OF = { PENDING: 1, UNINITIALIZED: 1, PROPOSING: 2, LEADER_REVEALING: 2, COMMITTING: 3, REVEALING: 3, APPEAL_COMMITTING: 3, APPEAL_REVEALING: 3, ACCEPTED: 5, FINALIZED: 5, READY_TO_FINALIZE: 5 };
+const STATUS_BY_NUM = { 0: "UNINITIALIZED", 1: "PENDING", 2: "PROPOSING", 3: "COMMITTING", 4: "REVEALING", 5: "ACCEPTED", 6: "UNDETERMINED", 7: "FINALIZED", 8: "CANCELED", 9: "APPEAL_REVEALING", 10: "APPEAL_COMMITTING", 11: "READY_TO_FINALIZE", 12: "VALIDATORS_TIMEOUT", 13: "LEADER_TIMEOUT", 14: "LEADER_REVEALING" };
+const BAD = new Set(["UNDETERMINED", "CANCELED", "VALIDATORS_TIMEOUT", "LEADER_TIMEOUT"]);
+const mmss = (s) => `${Math.floor(Math.max(0, s) / 60)}:${String(Math.floor(Math.max(0, s) % 60)).padStart(2, "0")}`;
+function saveTxs() { localSet(TX_KEY, JSON.stringify([...txs.values()].filter((t) => !t.final).map(({ hash, kind, title, started }) => ({ hash, kind, title, started })))); }
+function drawTx(t) {
+  let el = document.getElementById(`tx-${t.hash}`);
+  if (!el) { el = document.createElement("div"); el.id = `tx-${t.hash}`; $("tray").prepend(el); }
+  const stage = t.final ? (t.ok ? (t.finalized ? 6 : 5) : t.stage) : t.stage;
+  const steps = (STAGES[t.kind] || STAGES.open).map((l, i) => `<li class="${i < stage ? "done" : i === stage ? (t.final && !t.ok ? "bad" : "now") : ""}">${l}</li>`).join("");
+  const secs = ((t.ended || Date.now()) - t.started) / 1000, link = explorerTx(t.hash);
+  const foot = t.final ? (t.ok ? `Accepted in ${mmss(secs)}` : esc(t.error || "Not accepted")) : esc(t.statusName ? t.statusName.replace(/_/g, " ").toLowerCase() : "waiting for the network");
+  el.className = `tjob ${t.final ? (t.ok ? "ok" : "fail") : ""}${t.min ? " min" : ""}`;
+  el.innerHTML = `<div class="tjob-head"><b>${esc(t.title)}</b><span class="clock">${mmss(secs)}</span><button type="button" data-min="${t.hash}">${t.min ? "+" : "–"}</button><button type="button" data-x="${t.hash}">&times;</button></div>
+    <ul class="tsteps">${steps}</ul><div class="tjob-foot"><span>${foot}</span>${link ? `<a href="${link}" target="_blank" rel="noopener">Explorer</a>` : ""}</div>`;
+}
+setInterval(() => { for (const t of txs.values()) if (!t.final) drawTx(t); }, 1000);
+$("tray").addEventListener("click", (e) => {
+  const m = e.target.closest("[data-min]"); if (m) { const t = txs.get(m.dataset.min); if (t) { t.min = !t.min; drawTx(t); } return; }
+  const x = e.target.closest("[data-x]"); if (x) { document.getElementById(`tx-${x.dataset.x}`)?.remove(); }
+});
+function track(hash, meta) {
+  const t = { hash, stage: 1, final: false, ok: false, started: meta.started || Date.now(), ...meta };
+  txs.set(hash, t); saveTxs(); drawTx(t);
+  (async () => { while (!t.final) { try { const tx = await state.reader.getTransaction({ hash }); const n = tx?.statusName || STATUS_BY_NUM[Number(tx?.status)] || ""; if (n) { t.statusName = n; if (STAGE_OF[n] != null) t.stage = Math.max(t.stage, Math.min(STAGE_OF[n], 4)); } } catch {} await new Promise((r) => setTimeout(r, 3000)); } })();
+  t.done = (async () => {
+    try {
+      const tx = await state.reader.waitForTransactionReceipt({ hash, waitUntil: "decided", interval: 3000, retries: 400 });
+      const name = tx?.statusName || STATUS_BY_NUM[Number(tx?.status)] || "", exec = String(tx?.txExecutionResultName || "");
+      const executed = exec ? exec === "FINISHED_WITH_RETURN" : true;
+      t.ok = (name === "ACCEPTED" || name === "FINALIZED") && executed;
+      t.finalized = name === "FINALIZED";
+      t.error = t.ok ? "" : (BAD.has(name) ? `${name.replace(/_/g, " ").toLowerCase()}: nothing was saved, so you can send it again` : exec === "FINISHED_WITH_ERROR" ? "the contract rejected this call; check the inputs" : (exec || name || "not successful").toLowerCase());
+    } catch (e) { t.ok = false; t.error = errText(e); }
+    finally { t.final = true; t.ended = Date.now(); saveTxs(); drawTx(t); if (t.ok) setTimeout(() => { t.min = true; drawTx(t); }, 12000); await onTxDone(t); }
+  })();
+  return t;
+}
+async function send(functionName, args, { value, title, kind } = {}) {
+  if (!CONTRACT) { toast("No contract address set yet.", "err"); return null; }
+  if (!state.writer) { await connect(); if (!state.writer) return null; }
+  const write = { address: CONTRACT, functionName, args };
+  if (value != null) write.value = value;
+  try {
+    if (state.writer.estimateTransactionFeesForWrite) {
+      try { const est = await state.writer.estimateTransactionFeesForWrite(write); write.fees = { distribution: est.distribution, feeValue: est.feeValue }; } catch {}
+    }
+    const hash = await state.writer.writeContract(write);
+    return track(hash, { kind, title });
+  } catch (e) { toast(esc(errText(e)), "err", 12000); return null; }
+}
+
+/* ---------- jobs ---------- */
+async function read(fn, args = []) { return state.reader.readContract({ address: CONTRACT, functionName: fn, args }); }
+async function loadJobs() {
+  const all = [];
+  for (let off = 0; ; off += 50) { const p = JSON.parse(await read("get_jobs", [off, 50])); all.push(...p.jobs); if (all.length >= p.total || !p.jobs.length) break; }
+  state.jobs = all;
+}
+function draw() {
+  const me = state.account?.toLowerCase(), now = nowSec();
+  $("count").textContent = state.jobs.length ? `${state.jobs.length} total` : "";
+  if (!state.jobs.length) { $("jobs").innerHTML = `<li class="empty">No jobs yet. Open the first one.</li>`; return; }
+  $("jobs").innerHTML = [...state.jobs].reverse().map((j) => {
+    const lr = j.last_ruling;
+    const terms = j.terms.map((t, i) => {
+      const st = lr ? lr.statuses[i] : "WAITING";
+      return `<div class="term"><span class="st ${esc(st)}">${esc(st.replace("_", " "))}</span><div>${esc(t)}${lr && lr.reasons?.[i] ? `<small>${esc(lr.reasons[i])}</small>` : ""}</div></div>`;
+    }).join("");
+    const isAgent = me && me === j.agent, isClient = me && me === j.client;
+    const canFile = j.status === "OPEN" && isAgent && now <= j.deadline && j.filings < 3;
+    const canReclaim = j.status === "OPEN" && isClient && (now > j.deadline || j.filings >= 3);
+    const role = isClient ? " · you are the client" : isAgent ? " · you are the agent" : "";
+    return `<li class="job">
+      <div class="r1"><span class="st ${esc(j.status)}">${esc(j.status)}</span><b>${esc(j.title || "Untitled")}</b><span class="id">#${j.id}</span></div>
+      <div class="meta">${fmtGen(j.fee)} GEN fee · agent ${esc(short(j.agent))} · ${j.status === "OPEN" ? (now > j.deadline ? "deadline passed" : `due ${fmtIn(j.deadline)}`) : "closed"} · filings ${j.filings}/3${role}</div>
+      ${terms}
+      ${lr ? `${evHtml(lr.record)}<div class="meta">Ruling: <span class="st ${esc(lr.decision)}">${esc(lr.decision)}</span> ${esc(lr.note || "")} · <a href="https://scan.li.fi/tx/${esc(lr.tx)}" target="_blank" rel="noopener">LI.FI explorer</a></div>` : ""}
+      ${isClient && j.status === "OPEN" && !lr ? `<div class="meta">Waiting for the agent. To play both sides, switch your wallet to the agent account and reload: a <b>File proof</b> button appears.</div>` : ""}
+      ${canFile || canReclaim ? `<div class="acts">${canFile ? `<button class="btn sm" type="button" data-file="${j.id}">File proof</button>` : ""}${canReclaim ? `<button class="btn ghost sm" type="button" data-reclaim="${j.id}">Reclaim fee</button>` : ""}</div>` : ""}
+    </li>`;
+  }).join("");
+}
+async function refresh() {
+  if (!CONTRACT) { $("jobs").innerHTML = `<li class="empty">No contract address set yet.</li>`; return; }
+  try { await loadJobs(); draw(); } catch (e) { $("jobs").innerHTML = `<li class="empty">Couldn't load jobs: ${esc(errText(e))}</li>`; }
+}
+async function onTxDone(t) {
+  if (t.ok && t.kind === "open") toast("Job opened. The fee is in escrow.", "ok");
+  if (t.ok && t.kind === "file") toast("Ruling recorded. If every term was met, the agent has been paid.", "ok");
+  if (t.ok && t.kind === "reclaim") toast("Fee returned to the client.", "ok");
+  await refresh();
+}
+
+$("jOpen").addEventListener("click", async () => {
+  const terms = $("jTerms").value.split("\n").map((s) => s.trim()).filter(Boolean);
+  const agent = $("jAgent").value.trim(), days = Number($("jDays").value);
+  let fee; try { fee = parseGen($("jFee").value); } catch { fee = 0n; }
+  if (!terms.length || terms.length > 5) return toast("Give 1 to 5 delivery terms, one per line.", "err");
+  if (terms.some((t) => t.length < 8 || t.length > 200)) return toast("Each term must be 8 to 200 characters.", "err");
+  if (!/^0x[0-9a-fA-F]{40}$/.test(agent)) return toast("Enter the agent's 0x address.", "err");
+  if (state.account && agent.toLowerCase() === state.account.toLowerCase()) return toast("The agent must be a different wallet from yours.", "err");
+  if (!(days >= 1 && days <= 30)) return toast("Deadline must be 1 to 30 days.", "err");
+  if (fee <= 0n) return toast("Enter a fee above 0.", "err");
+  const since = Math.floor(new Date($("jSince").value).getTime() / 1000);
+  const nb = Number.isFinite(since) && since < nowSec() - 120 ? since : 0;
+  $("jOpen").disabled = true;
+  await send("open_job", [$("jTitle").value.trim(), terms.join("\n"), agent, Math.floor(days), nb], { kind: "open", value: fee, title: `Escrow ${fmtGen(fee)} GEN` });
+  $("jOpen").disabled = false;
+});
+
+let fileId = null;
+document.addEventListener("click", async (e) => {
+  const f = e.target.closest("[data-file]");
+  if (f) { fileId = Number(f.dataset.file); const j = state.jobs.find((x) => x.id === fileId); $("fileJob").textContent = j ? `#${j.id} ${j.title}` : ""; $("fileEv").innerHTML = ""; if (state.ev) $("fileTx").value = state.ev.tx; return $("fileDlg").showModal(); }
+  const r = e.target.closest("[data-reclaim]");
+  if (r) { r.disabled = true; await send("reclaim", [Number(r.dataset.reclaim)], { kind: "reclaim", title: `Reclaim job #${r.dataset.reclaim}` }); }
+});
+$("filePreview").addEventListener("click", async () => {
+  const tx = $("fileTx").value.trim().toLowerCase();
+  if (!/^0x[0-9a-f]{64}$/.test(tx)) return toast("Paste a 0x transaction hash.", "err");
+  $("fileEv").innerHTML = `<p class="hint">Reading LI.FI…</p>`;
+  try { $("fileEv").innerHTML = evHtml(await readLifi(tx)); } catch (e) { $("fileEv").innerHTML = `<p class="hint">${esc(errText(e))}</p>`; }
+});
+$("fileForm").addEventListener("submit", async (e) => {
+  if (e.submitter?.value === "cancel") return;
+  e.preventDefault();
+  const tx = $("fileTx").value.trim().toLowerCase();
+  if (!/^0x[0-9a-f]{64}$/.test(tx)) return toast("Paste the 0x transaction hash of the LI.FI transfer.", "err");
+  $("fileSend").disabled = true;
+  const t = await send("file_proof", [fileId, tx], { kind: "file", title: `Court ruling · job #${fileId}` });
+  $("fileSend").disabled = false;
+  if (t) { $("fileDlg").close(); $("fileForm").reset(); }
+});
+
+/* ---------- boot ---------- */
+(async () => {
+  $("netLabel").textContent = NETWORK === "testnetBradbury" ? "Bradbury" : NETWORK === "studionet" ? "Studionet" : NETWORK;
+  $("fundBtn").hidden = NETWORK !== "studionet";
+  try { await ensureSdk(); } catch (e) { $("jobs").innerHTML = `<li class="empty">Couldn't load the GenLayer SDK: ${esc(errText(e))}. Check your connection and reload.</li>`; return; }
+  $("contractLink").href = CONTRACT ? explorerAddr(CONTRACT) : "#";
+  try { for (const m of JSON.parse(localGet(TX_KEY) || "[]")) if (m?.hash && Date.now() - m.started < 3 * 3600e3) track(m.hash, m); } catch {}
+  if (window.ethereum?.selectedAddress || params.get("autoconnect")) connect();
+  await refresh();
+  setInterval(() => { if (!document.hidden) refresh(); }, 30000);
+})();
+</script>
+</body>
+</html>
